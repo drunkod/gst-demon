@@ -123,7 +123,7 @@
           make -j$(nproc)
           make install
           
-          echo "Build complete! Output in: $PWD/output"
+          ecBuilduild complete! Output in: $PWD/output"
         \'\';
 
         # Meson cross file for Android ARM64
