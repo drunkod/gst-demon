@@ -1,7 +1,7 @@
 # .idx/modules/packages.nix
-{ extendedPkgs }:
+{ extendedPkgs, gstreamerDaemon }:
 
-with extendedPkgs; [
+(with extendedPkgs; [
   # Rust Toolchain
   rustup
   cargo-watch
@@ -61,4 +61,4 @@ with extendedPkgs; [
   # Android Development Tools
   adb-sync
   scrcpy
-]
+]) ++ gstreamerDaemon.packages

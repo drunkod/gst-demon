@@ -1,5 +1,5 @@
 # .idx/modules/environment.nix
-{ lib, extendedPkgs }:
+{ lib, extendedPkgs, gstreamerDaemon }:
 
 let
   # Detect the actual Android SDK path
@@ -24,4 +24,5 @@ in
   PKG_CONFIG_ALLOW_CROSS = "1";
   RUSTFLAGS = "-lffi";
   NIXPKGS_ACCEPT_ANDROID_SDK_LICENSE = "1";
+  shellHook = lib.mkAfter gstreamerDaemon.shellHook;
 }
