@@ -2,36 +2,41 @@
 
 pkgs.stdenv.mkDerivation rec {
   pname = "gst-interpipe";
-  version = "1.1.8";
+  version = "1.1.10";
 
-  src = pkgs.fetchurl {
-    url = "https://github.com/RidgeRun/gst-interpipe/archive/v${version}.tar.gz";
-    sha256 = "981c40d4da47d380221d0435393416b42bd762584c905597de5fe5c373ee46ef";
+  src = pkgs.fetchFromGitHub {
+    owner = "RidgeRun";
+    repo = "gst-interpipe";
+    rev = "v${version}";
+    hash = "sha256-Z7yeUxsTebKPynYzhtst2rlApoXzU1u/32ZqzBvQ6eY=";
   };
 
   nativeBuildInputs = with pkgs; [
-    autoreconfHook
+    meson
+    ninja
     pkg-config
-    gtk-doc
   ];
 
   buildInputs = with pkgs; [
-    gstreamer
-    gst-plugins-base
+    gst_all_1.gstreamer
+    gst_all_1.gst-plugins-base
     glib
   ];
 
-  configureFlags = [
-    "--enable-gtk-doc=no"
-    "--libdir=${placeholder "out"}/lib"
+  mesonFlags = [
+    "-Denable-gtk-doc=false"
+    "-Dtests=disabled"
   ];
 
+  doCheck = false;
+
   postInstall = ''
-    # Ensure the plugin is in the right location
-    mkdir -p $out/lib/gstreamer-1.0
-    if [ -d "$out/lib/gstreamer-1.0" ]; then
-      echo "Interpipe plugin installed successfully"
+    if ! [ -f "$out/lib/gstreamer-1.0/libgstinterpipe.so" ]; then
+      echo "ERROR: Interpipe plugin not found at $out/lib/gstreamer-1.0/"
+      exit 1
     fi
+    echo "✅ Interpipe plugin installed at:"
+    echo "   $out/lib/gstreamer-1.0/libgstinterpipe.so"
   '';
 
   meta = with pkgs.lib; {

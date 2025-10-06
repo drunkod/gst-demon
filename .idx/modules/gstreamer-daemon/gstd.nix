@@ -2,25 +2,26 @@
 
 pkgs.stdenv.mkDerivation rec {
   pname = "gstd";
-  version = "0.15.0";
+  version = "0.15.2";
 
-  src = pkgs.fetchurl {
-    url = "https://github.com/RidgeRun/gstd-1.x/archive/v${version}.tar.gz";
-    sha256 = "f4a83765d2cf2948c38abc5107ab07d49a01b4101047f188fed7204f1d4e49c7";
+  src = pkgs.fetchFromGitHub {
+    owner = "RidgeRun";
+    repo = "gstd-1.x";
+    rev = "v${version}";
+    sha256 = "sha256-capHgSurUSaBIUbKlPHv5hsfBZ11UwtgyuXRjQJJxuY=";
   };
 
   nativeBuildInputs = with pkgs; [
-    autoreconfHook
+    meson
+    ninja
     pkg-config
-    gtk-doc
-    docbook-xsl-nons
-    docbook_xml_dtd_43
     python3
+    python3.pkgs.pip
   ];
 
   buildInputs = with pkgs; [
-    gstreamer
-    gst-plugins-base
+    gst_all_1.gstreamer
+    gst_all_1.gst-plugins-base
     glib
     json-glib
     libsoup
@@ -31,32 +32,35 @@ pkgs.stdenv.mkDerivation rec {
     libdaemon
   ];
 
-  configureFlags = [
-    "--enable-gtk-doc=no"  # Skip gtk-doc to speed up build
-    "--with-gstd-runstatedir=/tmp/gstd"
-    "--with-gstd-logstatedir=/tmp/gstd/logs"
+  mesonFlags = [
+    "-Denable-gtk-doc=false"
+    "-Denable-tests=disabled"
+    "-Denable-examples=disabled"
+    "-Denable-python=enabled"
+    "-Denable-systemd=disabled"
+    "-Denable-initd=disabled"
+    "-Dwith-gstd-runstatedir=/tmp/gstd"
+    "-Dwith-gstd-logstatedir=/tmp/gstd/logs"
   ];
 
-  preConfigure = ''
-    # Fix paths for NixOS
-    substituteInPlace configure.ac \
-      --replace "/var/run" "/tmp" \
-      --replace "/var/log" "/tmp/logs"
-  '';
+  doCheck = false;
 
   postInstall = ''
-    # Create wrapper scripts
-    mkdir -p $out/bin
-
-    # Create Python client wrapper
-    cat > $out/bin/gst-client << EOF
-    #!${pkgs.python3}/bin/python3
-    import sys
-    sys.path.insert(0, '$out/${pkgs.python3.sitePackages}')
-    from pygstc import gstc
-    # Add client implementation here
-    EOF
-    chmod +x $out/bin/gst-client
+    if [ ! -x "$out/bin/gstd" ]; then
+      echo "ERROR: gstd binary not found"
+      exit 1
+    fi
+    
+    echo "✅ GStreamer Daemon installed successfully"
+    echo "   Daemon: $out/bin/gstd"
+    
+    if [ -x "$out/bin/gst-client" ]; then
+      echo "   Client: $out/bin/gst-client"
+    fi
+    
+    if [ -d "$out/lib/python"* ]; then
+      echo "   Python client installed"
+    fi
   '';
 
   meta = with pkgs.lib; {

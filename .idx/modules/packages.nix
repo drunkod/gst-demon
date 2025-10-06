@@ -2,6 +2,7 @@
 { extendedPkgs, gstreamerDaemon }:
 
 (with extendedPkgs; [
+  python311
   # Rust Toolchain
   rustup
   cargo-watch

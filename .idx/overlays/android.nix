@@ -5,8 +5,8 @@ self: super: {
   androidSdk =
     let
       android-nixpkgs = import (fetchTarball {
-        url = "https://github.com/tadfisher/android-nixpkgs/archive/main.tar.gz";
-        sha256 = "sha256:0sff0igz587wbaszcq0mm0ldr9nb65srf40if55nlj1ba1jz3wdd"; 
+        url = "https://github.com/tadfisher/android-nixpkgs/archive/refs/tags/2025-10-03-stable.tar.gz";
+        sha256 = "sha256:0la5jbisgw57d8hdh6grsxjwyp9d7s8p7ss1j60r3ij10y84263a"; 
       }) { inherit pkgs; };
       sdk = android-nixpkgs.sdk (sdkPkgs: with sdkPkgs; [
         cmdline-tools-latest

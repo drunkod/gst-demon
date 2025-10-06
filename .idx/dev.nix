@@ -1,7 +1,7 @@
 # .idx/dev.nix
 { pkgs, lib, ... }:
 let
-  # Import all overlays
+  # Import all overlays 
   overlays = import ./overlays/default.nix { inherit pkgs; };
 
   # Apply overlays to pkgs
