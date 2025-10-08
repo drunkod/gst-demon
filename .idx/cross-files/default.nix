@@ -6,12 +6,17 @@
 { pkgs, config }:
 
 let
-  # Get Android SDK path dynamically
+  # Explicitly configure androidsdk to accept its license
+  explicitlyConfiguredAndroidSdk = pkgs.androidsdk.override {
+    accept_license = true;
+  };
+
+  # Get Android SDK path dynamically using the explicitly configured androidsdk
   androidSdkPath =
-    if builtins.pathExists "${pkgs.androidsdk}/share/android-sdk" then
-      "${pkgs.androidsdk}/share/android-sdk"
+    if builtins.pathExists "${explicitlyConfiguredAndroidSdk}/share/android-sdk" then
+      "${explicitlyConfiguredAndroidSdk}/share/android-sdk"
     else
-      "${pkgs.androidsdk}/libexec/android-sdk";
+      "${explicitlyConfiguredAndroidSdk}/libexec/android-sdk";
   
   # Build NDK paths
   ndkPath = "${androidSdkPath}/ndk/${config.android.ndkVersion}";
