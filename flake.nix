@@ -2,7 +2,7 @@
   description = "A Nix-based development environment";
 
   inputs = {
-    nixpkgs.url = "github.NixOS/nixpkgs/nixos-25.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
   };
 
   outputs = { self, nixpkgs }:
@@ -22,6 +22,9 @@
       devConfig = import ./.idx/dev.nix {
         inherit pkgs;
         lib = pkgs.lib;
+        config = {
+          android_sdk.accept_license = true;
+        };
       };
 
       # Extract the packages and environment setup from the dev.nix output
