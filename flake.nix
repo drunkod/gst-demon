@@ -2,13 +2,18 @@
   description = "A Nix-based development environment";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
   };
 
   outputs = { self, nixpkgs }:
     let
-      system = "x88_64-linux";
-      pkgs = import nixpkgs { inherit system; };
+      system = "x86_64-linux";
+      
+      # Allow unfree packages for the Android SDK
+      pkgs = import nixpkgs {
+        inherit system;
+        config.allowUnfree = true;
+      };
 
       # Import the existing dev.nix configuration
       devConfig = import ./.idx/dev.nix {
@@ -28,5 +33,10 @@
         buildInputs = envPackages;
         inherit (envSetup) shellHook;
       };
+
+      # Add a simple check to test the environment
+      checks.${system}.default = pkgs.runCommand "hello-check" {} ''
+        ${pkgs.hello}/bin/hello -n > $out
+      '';
     };
 }

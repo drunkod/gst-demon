@@ -8,10 +8,10 @@
 let
   # Get Android SDK path dynamically
   androidSdkPath =
-    if builtins.pathExists "${pkgs.androidSdk}/share/android-sdk" then
-      "${pkgs.androidSdk}/share/android-sdk"
+    if builtins.pathExists "${pkgs.androidsdk}/share/android-sdk" then
+      "${pkgs.androidsdk}/share/android-sdk"
     else
-      "${pkgs.androidSdk}/libexec/android-sdk";
+      "${pkgs.androidsdk}/libexec/android-sdk";
   
   # Build NDK paths
   ndkPath = "${androidSdkPath}/ndk/${config.android.ndkVersion}";
@@ -61,7 +61,7 @@ let
     c_link_args = [
       '-Wl,--gc-sections',
       '-Wl,--as-needed',
-      ${pkgs.lib.concatMapStringsSep ",\n      " (x: "'${x}'") extraLinkArgs}
+      ${pkgs.lib.concatMapStringsSep ",\n      " (x: "'${x}'") extra.LinkArgs}
     ]
     
     cpp_link_args = [
