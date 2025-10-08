@@ -1,5 +1,13 @@
 # .idx/modules/packages.nix
-{ extendedPkgs, gstreamerDaemon }:
+{ extendedPkgs, gstreamerDaemon, scripts }:
+
+let
+  # Import Android build module
+  androidBuild = import ./gstreamer-daemon/android-build.nix {
+    inherit (extendedPkgs) pkgs;
+    inherit extendedPkgs;
+  };
+in
 
 (with extendedPkgs; [
   python311
@@ -62,4 +70,7 @@
   # Android Development Tools
   adb-sync
   scrcpy
-]) ++ gstreamerDaemon.packages
+
+  # Git для клонирования исходников
+  git
+]) ++ gstreamerDaemon.packages ++ [ androidBuild.package ] ++ scripts.packages

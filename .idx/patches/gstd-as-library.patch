@@ -1,0 +1,126 @@
+diff --git a/gstd/meson.build b/gstd/meson.build
+index 1234567..abcdefg 100644
+--- a/gstd/meson.build
++++ b/gstd/meson.build
+@@ -30,8 +30,23 @@ gstd_sources = [
+   'gstd_tcp.c',
+ ]
+
+-# Build as executable
+-executable('gstd',
++# Build as shared library for Android
++libgstd = shared_library('gstd',
++  gstd_sources,
++  dependencies: gstd_deps,
++  include_directories: inc,
++  install: true,
++  install_dir: get_option('libdir'),
++  c_args: [
++    '-DGSTD_AS_LIBRARY',
++    '-fvisibility=hidden',
++  ],
++  version: meson.project_version(),
++  soversion: '0',
++)
++
++# Also build executable for non-Android platforms
++if host_machine.system() != 'android'
++  executable('gstd',
+     gstd_sources,
+     dependencies: gstd_deps,
+     include_directories: inc,
+@@ -39,3 +54,4 @@ executable('gstd',
+     install_dir: get_option('bindir'),
+   )
++endif
+diff --git a/gstd/gstd.c b/gstd/gstd.c
+index 2345678..bcdefgh 100644
+--- a/gstd/gstd.c
++++ b/gstd/gstd.c
+@@ -50,6 +50,10 @@
+
+ static GstdSession *session = NULL;
+
++#ifdef GSTD_AS_LIBRARY
++static GThread *daemon_thread = NULL;
++#endif
++
+ static void
+ gstd_signal_handler (int signum)
+ {
+@@ -100,7 +104,12 @@ gstd_parse_options (int *argc, char **argv[], GstdOptions *options)
+   return TRUE;
+ }
+
+-int
++#ifdef GSTD_AS_LIBRARY
++/* Export as library function */
++__attribute__((visibility("default")))
++#endif
++int
++gstd_main_impl (int argc, char *argv[])
+ main (int argc, char *argv[])
+ {
+   GstdOptions options = { 0 };
+@@ -150,4 +159,53 @@ main (int argc, char *argv[])
+
+   return ret;
+ }
++
++#ifdef GSTD_AS_LIBRARY
++/* Library API for Android */
++
++static gpointer
++gstd_thread_func (gpointer user_data)
++{
++  char **argv = (char **) user_data;
++  int argc = 0;
++
++  /* Count arguments */
++  while (argv[argc] != NULL) {
++    argc++;
++  }
++
++  return GINT_TO_POINTER (gstd_main_impl (argc, argv));
++}
++
++__attribute__((visibility("default")))
++int
++gstd_start (int argc, char *argv[])
++{
++  if (daemon_thread != NULL) {
++    g_warning ("GStreamer Daemon already running");
++    return -1;
++  }
++
++  /* Copy arguments */
++  char **argv_copy = g_new0 (char *, argc + 1);
++  for (int i = 0; i < argc; i++) {
++    argv_copy[i] = g_strdup (argv[i]);
++  }
++
++  daemon_thread = g_thread_new ("gstd-main", gstd_thread_func, argv_copy);
++
++  return 0;
++}
++
++__attribute__((visibility("default")))
++void
++gstd_stop (void)
++{
++  if (session) {
++    gstd_session_stop (session);
++  }
++
++  if (daemon_thread) {
++    g_thread_join (daemon_thread);
++    daemon_thread = NULL;
++  }
++}
++
++/* Simple wrapper for backward compatibility */
++int main (int argc, char *argv[])
++{
++  return gstd_main_impl (argc, argv);
++}
++#endif
