@@ -9,7 +9,6 @@
     let
       system = "x86_64-linux";
       
-      # Import nixpkgs with all necessary configuration directly
       pkgs = import nixpkgs {
         inherit system;
         config = {
@@ -18,15 +17,12 @@
         };
       };
 
-      # Import the existing dev.nix configuration, passing the globally configured pkgs
       devConfig = import ./.idx/dev.nix {
-        inherit pkgs; # Pass the fully configured pkgs
+        inherit pkgs;
         lib = pkgs.lib;
-        config = pkgs.config; # Also pass the config for modules that expect it
+        config = pkgs.config;
       };
 
-      # Extract the packages and environment setup from the dev.nix output
-      # This is based on the structure of how .idx/dev.nix is built
       firstImport = builtins.elemAt devConfig.imports 0;
       envPackages = firstImport.packages;
       envSetup = firstImport.env;
@@ -35,10 +31,12 @@
     {
       devShells.${system}.default = pkgs.mkShell {
         buildInputs = envPackages;
-        inherit (envSetup) shellHook;
+        shellHook = ''
+          export NIXPKGS_ACCEPT_ANDROID_SDK_LICENSE=1
+          ${envSetup.shellHook}
+        '';
       };
 
-      # Add a simple check to test the environment
       checks.${system}.default = pkgs.runCommand "hello-check" {} ''
         ${pkgs.hello}/bin/hello -n > $out
       '';
