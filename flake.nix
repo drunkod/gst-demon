@@ -2,17 +2,20 @@
   description = "A Nix-based development environment";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
+    nixpkgs.url = "github.NixOS/nixpkgs/nixos-25.05";
   };
 
   outputs = { self, nixpkgs }:
     let
       system = "x86_64-linux";
       
-      # Allow unfree packages for the Android SDK
+      # Allow unfree packages and accept Android SDK license
       pkgs = import nixpkgs {
         inherit system;
-        config.allowUnfree = true;
+        config = {
+          allowUnfree = true;
+          android_sdk.accept_license = true;
+        };
       };
 
       # Import the existing dev.nix configuration

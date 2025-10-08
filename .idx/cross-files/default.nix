@@ -61,7 +61,7 @@ let
     c_link_args = [
       '-Wl,--gc-sections',
       '-Wl,--as-needed',
-      ${pkgs.lib.concatMapStringsSep ",\n      " (x: "'${x}'") extra.LinkArgs}
+      ${pkgs.lib.concatMapStringsSep ",\n      " (x: "'${x}'") extraLinkArgs}
     ]
     
     cpp_link_args = [
