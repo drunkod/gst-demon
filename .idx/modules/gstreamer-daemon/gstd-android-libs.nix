@@ -28,7 +28,7 @@ let
   gstArch = gstArchMap.${targetArch} or (throw "Unknown target architecture: ${targetArch}");
   
   # Get dynamically generated cross-file
-  crossFiles = import ./../cross-files { inherit pkgs config; };
+  crossFiles = import ./../../cross-files { inherit pkgs config; };
   crossFile = crossFiles.byAbi targetArch;
   
   # Extract GStreamer Android to a fixed location for this build
