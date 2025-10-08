@@ -22,9 +22,8 @@
       devConfig = import ./.idx/dev.nix {
         inherit pkgs;
         lib = pkgs.lib;
-        config = {
-          android_sdk.accept_license = true;
-        };
+        # Pass the entire pkgs.config object as the 'config' argument to dev.nix
+        config = pkgs.config;
       };
 
       # Extract the packages and environment setup from the dev.nix output

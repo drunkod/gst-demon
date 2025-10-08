@@ -4,10 +4,10 @@ let
   # ========================================================================
   # 1. Import centralized configuration u 
   # ========================================================================
-  # Pass the incoming config to the modules/config.nix
-  baseConfig = import ./modules/config.nix { inherit config; };
+  # Import the base configuration, which is a simple attribute set
+  baseConfig = import ./modules/config.nix;
 
-  # Merge the base config with any overrides from the flake
+  # Merge the base config with any overrides from the flake (which includes license acceptance)
   mergedConfig = baseConfig // config;
 
   # ========================================================================
@@ -56,7 +56,7 @@ let
   
   # ========================================================================
   # 8. Setup environment
-  = import ./modules/environment.nix { 
+  environment = import ./modules/environment.nix { 
     inherit lib extendedPkgs gstreamerDaemon gstreamerAndroid mergedConfig; 
   };
   
