@@ -10,23 +10,40 @@ let
       builtins.foldl' (acc: overlay: acc // overlay self super) {} overlays
   );
 
-  # Import GStreamer Daemon module
-  gstreamerDaemon = import ./modules/gstreamer-daemon { inherit pkgs extendedPkgs; };
-
-  # Import config
+  # Import config (centralized configuration)
   config = import ./modules/config.nix;
 
-  # Import GStreamer for Android module
-  gstreamerAndroid = import ./modules/gstreamer-android { inherit pkgs config; };
+  # Import GStreamer for Android module (must be before gstreamerDaemon)
+  gstreamerAndroid = import ./modules/gstreamer-android { 
+    inherit pkgs config; 
+  };
+
+  # Import GStreamer Daemon module
+  gstreamerDaemon = import ./modules/gstreamer-daemon { 
+    inherit pkgs extendedPkgs; 
+  };
 
   # Import scripts module
-  scripts = import ./modules/scripts { inherit pkgs; };
+  scripts = import ./modules/scripts { 
+    inherit pkgs; 
+  };
 
-  # Import modules
-  package_list = import ./modules/packages.nix { inherit extendedPkgs gstreamerDaemon scripts; };
-  environment = import ./modules/environment.nix { inherit lib extendedPkgs gstreamerDaemon; };
-  previews = import ./modules/previews.nix { inherit extendedPkgs; };
-  workspace = import ./modules/workspace.nix { inherit extendedPkgs; };
+  # Import modules with all dependencies
+  package_list = import ./modules/packages.nix { 
+    inherit extendedPkgs gstreamerDaemon scripts gstreamerAndroid; 
+  };
+  
+  environment = import ./modules/environment.nix { 
+    inherit lib extendedPkgs gstreamerDaemon gstreamerAndroid; 
+  };
+  
+  previews = import ./modules/previews.nix { 
+    inherit extendedPkgs; 
+  };
+  
+  workspace = import ./modules/workspace.nix { 
+    inherit extendedPkgs gstreamerAndroid; 
+  };
 in
 {
   imports = [
@@ -38,9 +55,4 @@ in
     previews
     workspace
   ];
-
-  # Expose packages for nix-build
-  packages = {
-    inherit gstreamerAndroid;
-  };
 }

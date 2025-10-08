@@ -1,5 +1,5 @@
 # .idx/modules/environment.nix
-{ lib, extendedPkgs, gstreamerDaemon }:
+{ lib, extendedPkgs, gstreamerDaemon, gstreamerAndroid }:
 
 let
   # Detect the actual Android SDK path
@@ -8,6 +8,9 @@ let
       "${extendedPkgs.androidSdk}/share/android-sdk"
     else
       "${extendedPkgs.androidSdk}/libexec/android-sdk";
+  
+  # GStreamer Android source path (from Nix store)
+  gstAndroidSource = gstreamerAndroid.source;
 in
 {
   # Android Environment
@@ -32,6 +35,9 @@ in
   GST_PLUGIN_PATH_1_0 = gstreamerDaemon.env.GST_PLUGIN_PATH_1_0;
   GST_PLUGIN_SYSTEM_PATH_1_0 = gstreamerDaemon.env.GST_PLUGIN_SYSTEM_PATH_1_0;
   
+  # GStreamer for Android (Nix store path to tarball)
+  GSTREAMER_ANDROID_TARBALL = gstAndroidSource;
+  
   # Combined PATH
   PATH = [
     # Android paths
@@ -43,5 +49,25 @@ in
   ] ++ gstreamerDaemon.pathAdditions;  # Add GStreamer daemon bins to PATH
   
   # Shell hook (keep your existing pattern)
-  shellHook = lib.mkAfter gstreamerDaemon.shellHook;
+  shellHook = lib.mkAfter ''
+    ${gstreamerDaemon.shellHook}
+    
+    # GStreamer for Android info
+    if [ -z "$_GST_ANDROID_INFO_SHOWN" ]; then
+      export _GST_ANDROID_INFO_SHOWN=1
+      
+      if [ -f "$GSTREAMER_ANDROID_TARBALL" ]; then
+        TARBALL_SIZE=$(du -h "$GSTREAMER_ANDROID_TARBALL" 2>/dev/null | cut -f1 || echo "unknown")
+        echo ""
+        echo "📦 GStreamer for Android available"
+        echo "   Tarball: $GSTREAMER_ANDROID_TARBALL"
+        echo "   Size: $TARBALL_SIZE"
+        echo ""
+        echo "Setup:"
+        echo "  • setup-android-env        - Extract GStreamer binaries"
+        echo "  • verify-gstreamer-android - Verify installation"
+        echo ""
+      fi
+    fi
+  '';
 }

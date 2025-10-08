@@ -1,5 +1,5 @@
 # .idx/modules/packages.nix
-{ extendedPkgs, gstreamerDaemon, scripts }:
+{ extendedPkgs, gstreamerDaemon, scripts, gstreamerAndroid }:
 
 let
   # Import Android build module
@@ -7,10 +7,59 @@ let
     inherit (extendedPkgs) pkgs;
     inherit extendedPkgs;
   };
+
+  # Create a package that provides the GStreamer Android binaries
+  gstreamerAndroidPackage = extendedPkgs.stdenv.mkDerivation {
+    name = "gstreamer-android-setup";
+    version = "1.0.0";
+    
+    # No source needed - this is a setup helper
+    src = extendedPkgs.writeText "dummy" "";
+    
+    buildInputs = [ gstreamerAndroid.source ];
+    
+    # Create a script that can extract/setup GStreamer
+    installPhase = ''
+      mkdir -p $out/bin
+      
+      cat > $out/bin/gstreamer-android-path << 'EOF'
+#!/usr/bin/env bash
+# Returns the path to the GStreamer Android tarball
+echo "${gstreamerAndroid.source}"
+EOF
+      
+      chmod +x $out/bin/gstreamer-android-path
+      
+      # Also create a verification script
+      cat > $out/bin/verify-gstreamer-android << 'EOF'
+#!/usr/bin/env bash
+TARBALL="${gstreamerAndroid.source}"
+if [ -f "$TARBALL" ]; then
+  echo "✅ GStreamer for Android found at: $TARBALL"
+  echo "   Size: $(du -h "$TARBALL" | cut -f1)"
+  echo ""
+  echo "To extract:"
+  echo "  tar -xJf \"$TARBALL\" -C ./gstreamer-android"
+  exit 0
+else
+  echo "❌ GStreamer for Android not found!"
+  exit 1
+fi
+EOF
+      
+      chmod +x $out/bin/verify-gstreamer-android
+    '';
+    
+    meta = {
+      description = "Helper scripts for GStreamer Android setup";
+    };
+  };
+
 in
 
 (with extendedPkgs; [
   python311
+  
   # Rust Toolchain
   rustup
   cargo-watch
@@ -40,7 +89,7 @@ in
   openssl.dev
   libffi
 
-  # GStreamer & Plugins
+  # GStreamer & Plugins (for host development)
   gst_all_1.gstreamer
   gst_all_1.gstreamer.dev
   gst_all_1.gst-plugins-base
@@ -70,7 +119,13 @@ in
   # Android Development Tools
   adb-sync
   scrcpy
-
-  # Git для клонирования исходников
+  
+  # Archive tools (for extracting GStreamer)
+  xz
+  gnutar
+  
+  # Git for cloning sources
   git
-]) ++ gstreamerDaemon.packages ++ [ androidBuild.package ] ++ scripts.packages
+]) ++ gstreamerDaemon.packages 
+   ++ [ androidBuild.package gstreamerAndroidPackage ] 
+   ++ scripts.packages
