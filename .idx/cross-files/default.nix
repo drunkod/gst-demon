@@ -6,21 +6,12 @@
 { pkgs, config }:
 
 let
-  # Re-import nixpkgs with the necessary config for androidsdk
-  # This ensures the license is accepted at the point of consumption
-  configuredPkgs = import pkgs.path {
-    system = pkgs.system;
-    config = pkgs.config // {
-      android_sdk.accept_license = true;
-    };
-  };
-
-  # Get Android SDK path dynamically using the configuredPkgs
+  # Get Android SDK path dynamically
   androidSdkPath =
-    if builtins.pathExists "${configuredPkgs.androidsdk}/share/android-sdk" then
-      "${configuredPkgs.androidsdk}/share/android-sdk"
+    if builtins.pathExists "${pkgs.androidsdk}/share/android-sdk" then
+      "${pkgs.androidsdk}/share/android-sdk"
     else
-      "${configuredPkgs.androidsdk}/libexec/android-sdk";
+      "${pkgs.androidsdk}/libexec/android-sdk";
   
   # Build NDK paths
   ndkPath = "${androidSdkPath}/ndk/${config.android.ndkVersion}";

@@ -9,8 +9,8 @@
     let
       system = "x86_64-linux";
       
-      # Allow unfree packages and accept Android SDK license
-      pkgs = import nixpkgs {
+      # Configure pkgs once with all necessary options
+      configuredPkgs = import nixpkgs {
         inherit system;
         config = {
           allowUnfree = true;
@@ -18,12 +18,11 @@
         };
       };
 
-      # Import the existing dev.nix configuration
+      # Import the existing dev.nix configuration, passing the configuredPkgs
       devConfig = import ./.idx/dev.nix {
-        inherit pkgs;
-        lib = pkgs.lib;
-        # Pass the entire pkgs.config object as the 'config' argument to dev.nix
-        config = pkgs.config;
+        pkgs = configuredPkgs; # Pass the fully configured pkgs
+        lib = configuredPkgs.lib;
+        config = configuredPkgs.config; # Also pass the config for modules that expect it
       };
 
       # Extract the packages and environment setup from the dev.nix output
@@ -34,14 +33,14 @@
 
     in
     {
-      devShells.${system}.default = pkgs.mkShell {
+      devShells.${system}.default = configuredPkgs.mkShell {
         buildInputs = envPackages;
         inherit (envSetup) shellHook;
       };
 
       # Add a simple check to test the environment
-      checks.${system}.default = pkgs.runCommand "hello-check" {} ''
-        ${pkgs.hello}/bin/hello -n > $out
+      checks.${system}.default = configuredPkgs.runCommand "hello-check" {} ''
+        ${configuredPkgs.hello}/bin/hello -n > $out
       '';
     };
 }
