@@ -1,49 +1,76 @@
 # .idx/dev.nix
 { pkgs, lib, ... }:
 let
-  # Import all overlays 
-  overlays = import ./overlays/default.nix { inherit pkgs; };
+  # ========================================================================
+  # 1. Import centralized configuration u 
+  # ========================================================================
+  config = import ./modules/config.nix;
 
-  # Apply overlays to pkgs
+  # ========================================================================
+  # 2. Apply overlays to pkgs
+  # ========================================================================
+  overlays = import ./overlays/default.nix { inherit pkgs; };
   extendedPkgs = pkgs.extend (
     self: super:
       builtins.foldl' (acc: overlay: acc // overlay self super) {} overlays
   );
 
-  # Import config (centralized configuration)
-  config = import ./modules/config.nix;
-
-  # Import GStreamer for Android module (must be before gstreamerDaemon)
+  # ========================================================================
+  # 3. Import GStreamer for Android module (pre-built binaries)
+  # ========================================================================
   gstreamerAndroid = import ./modules/gstreamer-android { 
     inherit pkgs config; 
   };
 
-  # Import GStreamer Daemon module
+  # ========================================================================
+  # 4. Import GStreamer Daemon module (host development)
+  # ========================================================================
   gstreamerDaemon = import ./modules/gstreamer-daemon { 
     inherit pkgs extendedPkgs; 
   };
 
-  # Import scripts module
+  # ========================================================================
+  # 5. Import Android libraries module (Nix-built Android libs)
+  # ========================================================================
+  androidLibs = import ./modules/gstreamer-daemon/android-libs.nix {
+    inherit pkgs config gstreamerAndroid;
+  };
+
+  # ========================================================================
+  # 6. Import scripts module
+  # ========================================================================
   scripts = import ./modules/scripts { 
     inherit pkgs; 
   };
 
-  # Import modules with all dependencies
+  # ========================================================================
+  # 7. Assemble all packages
+  # ========================================================================
   package_list = import ./modules/packages.nix { 
-    inherit extendedPkgs gstreamerDaemon scripts gstreamerAndroid; 
-  };
+    inherit extendedPkgs gstreamerDaemon scripts gstreamerAndroid config;
+  } ++ androidLibs.packages;
   
+  # ========================================================================
+  # 8. Setup environment
+  # ========================================================================
   environment = import ./modules/environment.nix { 
-    inherit lib extendedPkgs gstreamerDaemon gstreamerAndroid; 
+    inherit lib extendedPkgs gstreamerDaemon gstreamerAndroid config; 
   };
   
+  # ========================================================================
+  # 9. Configure previews
+  # ========================================================================
   previews = import ./modules/previews.nix { 
     inherit extendedPkgs; 
   };
   
+  # ========================================================================
+  # 10. Configure workspace automation
+  # ========================================================================
   workspace = import ./modules/workspace.nix { 
-    inherit extendedPkgs gstreamerAndroid; 
+    inherit extendedPkgs gstreamerAndroid config; 
   };
+
 in
 {
   imports = [

@@ -1,5 +1,5 @@
 # .idx/modules/packages.nix
-{ extendedPkgs, gstreamerDaemon, scripts, gstreamerAndroid }:
+{ extendedPkgs, gstreamerDaemon, scripts, gstreamerAndroid, config }:
 
 let
   # Import Android build module

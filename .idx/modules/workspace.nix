@@ -1,5 +1,5 @@
 # .idx/modules/workspace.nix
-{ extendedPkgs, gstreamerAndroid }:
+{ extendedPkgs, gstreamerAndroid, config }:
 
 {
   idx.workspace = {
@@ -79,6 +79,7 @@
           exit 1
         fi
         
+        echo "   Version: ${config.gstreamer.version}"
         echo "   Tarball: $GSTREAMER_TARBALL"
         echo "   Size: $(du -h "$GSTREAMER_TARBALL" | cut -f1)"
         
@@ -123,10 +124,10 @@
           tar -xzf /tmp/openssl.tar.gz -C /tmp
           
           cd /tmp/openssl-3.0.12
-          export ANDROID_NDK_ROOT="${extendedPkgs.androidSdk}/libexec/android-sdk/ndk/25.2.9519653"
+          export ANDROID_NDK_ROOT="${extendedPkgs.androidSdk}/libexec/android-sdk/ndk/${config.android.ndkVersion}"
           ./Configure android-arm64 \
             --prefix="$OPENSSL_DEST/android-arm64" \
-            -D__ANDROID_API__=24 \
+            -D__ANDROID_API__=${config.android.apiLevel} \
             no-shared no-tests
           make -j$(nproc)
           make install_sw
