@@ -2,7 +2,8 @@
 { pkgs, lib, ... }:
 let
   # Import all overlays
-  overlays = import ./overlays/default.nix { inherit pkgs; };
+  # overlays = import ./overlays/default.nix { inherit pkgs; };
+  overlays = []; # Use an empty list to disable overlays safely
 
   # Apply overlays to pkgs
   extendedPkgs = pkgs.extend (
