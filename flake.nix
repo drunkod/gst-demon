@@ -9,8 +9,8 @@
     let
       system = "x86_64-linux";
       
-      # Configure pkgs once with all necessary options
-      configuredPkgs = import nixpkgs {
+      # Import nixpkgs with all necessary configuration directly
+      pkgs = import nixpkgs {
         inherit system;
         config = {
           allowUnfree = true;
@@ -18,11 +18,11 @@
         };
       };
 
-      # Import the existing dev.nix configuration, passing the configuredPkgs
+      # Import the existing dev.nix configuration, passing the globally configured pkgs
       devConfig = import ./.idx/dev.nix {
-        pkgs = configuredPkgs; # Pass the fully configured pkgs
-        lib = configuredPkgs.lib;
-        config = configuredPkgs.config; # Also pass the config for modules that expect it
+        inherit pkgs; # Pass the fully configured pkgs
+        lib = pkgs.lib;
+        config = pkgs.config; # Also pass the config for modules that expect it
       };
 
       # Extract the packages and environment setup from the dev.nix output
@@ -33,14 +33,14 @@
 
     in
     {
-      devShells.${system}.default = configuredPkgs.mkShell {
+      devShells.${system}.default = pkgs.mkShell {
         buildInputs = envPackages;
         inherit (envSetup) shellHook;
       };
 
       # Add a simple check to test the environment
-      checks.${system}.default = configuredPkgs.runCommand "hello-check" {} ''
-        ${configuredPkgs.hello}/bin/hello -n > $out
+      checks.${system}.default = pkgs.runCommand "hello-check" {} ''
+        ${pkgs.hello}/bin/hello -n > $out
       '';
     };
 }

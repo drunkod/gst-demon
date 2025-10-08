@@ -1,14 +1,10 @@
 # .idx/dev.nix
-{ pkgs, lib, config, ... }:
+{ pkgs, lib, ... }:
 let
   # ========================================================================
   # 1. Import centralized configuration u 
   # ========================================================================
-  # Import the base configuration, which is a simple attribute set
-  baseConfig = import ./modules/config.nix;
-
-  # Merge the base config with any overrides from the flake (which includes license acceptance)
-  mergedConfig = baseConfig // config;
+  config = import ./modules/config.nix;
 
   # ========================================================================
   # 2. Apply overlays to pkgs
@@ -23,7 +19,7 @@ let
   # 3. Import GStreamer for Android module (pre-built binaries)
   # ========================================================================
   gstreamerAndroid = import ./modules/gstreamer-android { 
-    inherit pkgs mergedConfig; 
+    inherit pkgs config; 
   };
 
   # ========================================================================
@@ -37,7 +33,7 @@ let
   # 5. Import Android libraries module (Nix-built Android libs)
   # ========================================================================
   androidLibs = import ./modules/gstreamer-daemon/android-libs.nix {
-    inherit pkgs mergedConfig gstreamerAndroid;
+    inherit pkgs config gstreamerAndroid;
   };
 
   # ========================================================================
@@ -51,13 +47,13 @@ let
   # 7. Assemble all packages
   # ========================================================================
   package_list = import ./modules/packages.nix { 
-    inherit extendedPkgs gstreamerDaemon scripts gstreamerAndroid mergedConfig;
+    inherit extendedPkgs gstreamerDaemon scripts gstreamerAndroid config;
   } ++ androidLibs.packages;
   
   # ========================================================================
   # 8. Setup environment
   environment = import ./modules/environment.nix { 
-    inherit lib extendedPkgs gstreamerDaemon gstreamerAndroid mergedConfig; 
+    inherit lib extendedPkgs gstreamerDaemon gstreamerAndroid config; 
   };
   
   # ========================================================================
@@ -71,7 +67,7 @@ let
   # 10. Configure workspace automation
   # ========================================================================
   workspace = import ./modules/workspace.nix { 
-    inherit extendedPkgs gstreamerAndroid mergedConfig; 
+    inherit extendedPkgs gstreamerAndroid config; 
   };
 
 in
