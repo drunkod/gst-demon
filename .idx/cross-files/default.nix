@@ -78,7 +78,7 @@ let
   '';
 
 in
-{
+rec {
   # ARM64 (aarch64)
   aarch64 = mkCrossFile {
     arch = "aarch64";
