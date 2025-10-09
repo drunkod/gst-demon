@@ -26,10 +26,12 @@ let
     Make sure cross-android.nix overlay is loaded.
   '');
 
-  # Get the patch
-  gstd-as-library-patch = pkgs.patches.gstd-as-library or (throw ''
+  # Get the patch - using the new attribute name
+  gstd-as-library-patch = pkgs.gstdPatches.asLibrary or (throw ''
     gstd-as-library patch not found.
-    Make sure patches overlay is loaded and .idx/patches/gstd-as-library.patch exists.
+    Expected: pkgs.gstdPatches.asLibrary
+    Make sure overlays/default.nix exposes gstdPatches.
+    Patch file: .idx/patches/gstd-as-library.patch
   '');
 
   # Platform information for verification

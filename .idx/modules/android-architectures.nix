@@ -9,6 +9,8 @@
     gccPrefix = "aarch64";
     cpuFamily = "aarch64";
     cpu = "armv8-a";
+    # For 64-bit, use "-android"
+    abiSuffix = "android";
     extraCFlags = [];
     extraLinkFlags = [];
   };
@@ -19,6 +21,8 @@
     gccPrefix = "armv7a";
     cpuFamily = "arm";
     cpu = "armv7-a";
+    # ✅ For 32-bit ARM, use "-androideabi" NOT "-android"
+    abiSuffix = "androideabi";
     extraCFlags = [
       "-march=armv7-a"
       "-mfloat-abi=softfp"
@@ -36,6 +40,8 @@
     gccPrefix = "x86_64";
     cpuFamily = "x86_64";
     cpu = "x86_64";
+    # For x86_64, use "-android"
+    abiSuffix = "android";
     extraCFlags = [
       "-msse4.2"
       "-mpopcnt"
