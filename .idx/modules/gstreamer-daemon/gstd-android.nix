@@ -119,6 +119,6 @@ pkgsAndroid.stdenv.mkDerivation rec {
     description = "GStreamer Daemon as a library for Android";
     homepage = "https://github.com/RidgeRun/gstd-1.x";
     license = licenses.lgpl21Plus;
-    platforms = platforms.android;
+    platforms = platforms.linux;
   };
 }

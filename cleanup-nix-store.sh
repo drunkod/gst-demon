@@ -31,13 +31,13 @@ echo "  Nix Store Cleanup - Space Recovery"
 echo "════════════════════════════════════════════════════════════"
 echo ""
 
-# Check current size
-if command -v du &> /dev/null; then
-  BEFORE_SIZE=$(du -sh /nix/store 2>/dev/null | cut -f1 || echo "unknown")
-  log_info "Current /nix/store size: $BEFORE_SIZE"
-else
-  BEFORE_SIZE="unknown"
-fi
+# # Check current size
+# if command -v du &> /dev/null; then
+#   BEFORE_SIZE=$(du -sh /nix 2>/dev/null | cut -f1 || echo "unknown")
+#   log_info "Current /nix/store size: $BEFORE_SIZE"
+# else
+#   BEFORE_SIZE="unknown"
+# fi
 
 echo ""
 log_warning "This will:"

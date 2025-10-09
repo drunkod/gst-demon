@@ -98,6 +98,6 @@ pkgsAndroid.stdenv.mkDerivation rec {
     description = "GStreamer interpipe plugin for Android";
     homepage = "https://github.com/RidgeRun/gst-interpipe";
     license = licenses.lgpl21Plus;
-    platforms = platforms.android;
+    platforms = platforms.linux;
   };
 }
