@@ -1,6 +1,6 @@
 # .idx/modules/packages.nix
 # Minimal package set - only essential tools
-{ extendedPkgs, gstreamerDaemon, gstreamerAndroid, config, scripts ? null }:
+{ extendedPkgs, gstreamerDaemon, gstreamerAndroid, config }:
 
 let
   # Android build module
@@ -149,4 +149,3 @@ in
   
 ]) ++ gstreamerDaemon.packages 
    ++ [ androidBuild.package gstreamerAndroidPackage ]
-   ++ (if scripts != null then scripts.packages or [] else [])
