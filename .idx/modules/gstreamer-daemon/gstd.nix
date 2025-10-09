@@ -24,7 +24,7 @@ pkgs.stdenv.mkDerivation rec {
     gst_all_1.gst-plugins-base
     glib
     json-glib
-    libsoup
+    libsoup_2_4
     jansson
     libedit
     ncurses

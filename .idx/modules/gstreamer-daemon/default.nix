@@ -52,7 +52,7 @@ in
     # Runtime dependencies
     glib
     json-glib
-    libsoup
+    libsoup_2_4
     jansson
     libedit
     ncurses

@@ -211,7 +211,7 @@
           jansson
           libdaemon
           libedit
-          libsoup
+          libsoup_2_4
           ncurses
           
           # Python for build scripts
